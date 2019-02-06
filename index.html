@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script>
+        var c;
+        var ctx;
+        var img;
+        var x = 0;
+        var y = [];
+        var player;
+        var enemies = [];
+        var pickUps = [];
+        var physics;
+        
+        //classes
+        class Character {
+            constructor(x, y, spd, img){
+                this.iX = x;
+                this.iY = y;
+                this.iSpd = spd;
+                this.sprite = new Image();
+                this.sprite.src = img;
+            }
+        }
+
+        class PickUp {
+            constructor(x, y, img){
+                this.iX = x;
+                this.iY = y;
+                this.sprite = new Image();
+                this.sprite.src = img;
+                this.exists = true;
+            }
+        }
+        
+        class Physics {
+            collision (objA, objB) {
+                let c = (objB.iX - objA.iX) + (objB.iY - objA.iY);
+                
+                if (c < 25) {
+                    return true;
+                }
+                else{
+                    return false;
+                }
+            }
+            move (obj) {
+                
+
+            }
+        }
+
+
+        
+        function setup () {
+                
+            //Player
+            player = new Character(400, 100, 2, "https://www.google.com/url?sa=i&source=images&cd=&cad=rja&uact=8&ved=2ahUKEwjby_HZk6jgAhUMZd8KHchvCKwQjRx6BAgBEAU&url=https%3A%2F%2Fimgur.com%2Fgallery%2FM2WNp%2Fcomment%2F8408891&psig=AOvVaw1kxIGM_2wP9EZYPGyxh-Ge&ust=1549578421002435");
+                
+            //Enemies
+            for (i = 0; i < 10; i++){
+                enemies[i] = new Character(0, 0, 0, "https://www.google.com/url?sa=i&source=images&cd=&cad=rja&uact=8&ved=2ahUKEwjno5CmlajgAhVhpIMKHSpAAbwQjRx6BAgBEAU&url=https%3A%2F%2Fcommons.wikimedia.org%2Fwiki%2FFile%3AThe_Legend_of_Zelda_-_NES_-_Red_octorok.svg&psig=AOvVaw35lfGvlpuRR569CJSwKT2H&ust=1549578877728030");
+            }
+
+            //Pick Ups
+            for (i = 0; i < 15; i++){
+                pickUps[i] = new PickUp( Math.floor((Math.random() * 750) + 25), Math.floor((Math.random() * 550) + 25), "https://www.google.com/url?sa=i&source=images&cd=&cad=rja&uact=8&ved=2ahUKEwioncfZlqjgAhVI0YMKHcgFB20QjRx6BAgBEAU&url=https%3A%2F%2Fwww.kisspng.com%2Fpng-the-legend-of-zelda-the-wind-waker-pixel-art-hyrul-5161309%2Fdownload-png.html&psig=AOvVaw2vodV9LWsEnwCtFjm07ZLu&ust=1549579251964562");
+                    
+            }
+            
+            //Physics
+            physics = new Phyics();
+
+
+            c = document.getElementById("myCanvas");
+            ctx = c.getContext("2d");
+            setInterval(Draw, 100);
+
+            window.addEventListener('keydown', function(event){
+                KeyInput();
+            }, false);
+
+        }
+
+        function update () {
+            physics.move(player);
+        }
+
+        function render(obj) {
+
+            ctx.clearRect(0,0,c.width,c.height);
+                
+            ctx.drawImage(obj.sprite,obj.iX,obj.iY);
+        }
+    
+
+
+        function Draw()
+        {
+            ctx.clearRect(0,0,c.width,c.height);
+            for(i=0; i < 3; i++)
+                ctx.drawImage(img,x,y[i]);
+        }
+        function Reset(){
+            x=0;
+        }
+
+        function KeyInput(){
+
+            switch (event.keyCode) 
+            {
+                case 37: // Left
+                break;
+                case 38: // Up
+                y[0] --;
+                break;
+                case 39: // Right
+                break;
+                case 40: // Down
+                y[0]++;
+                break;
+            }
+        }
+
+        </script>
+    </head>
+    <body onload="setup()">
+        <p>Game:</p>
+        <canvas id="myCanvas" 
+                width="800" 
+                height="600"
+                style="border:1px solid #d3d3d3;">
+            Your browser does not support the HTML5 canvas tag.
+        </canvas>
+        
+        <p><button onclick="Reset()">Reset</button></p>
+    </body>
+</html>
