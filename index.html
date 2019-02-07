@@ -1,188 +1,169 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <script>
+<head>
+<script>
 
-        const DIR_UP = 0;
-        const DIR_LEFT = 1;
-        const DIR_DOWN = 2;
-        const DIR_RIGHT = 3;
+const NUM_PICKUPS = 15;
+const NUM_ENEMIES = 4;
 
-        const NUM_ENEMIES = 10;
-        const NUM_PICKUPS = 15;
+var c;
+var ctx;
+var img;
+var player;
+var enemies = [];
+var pickUps = [];
+var pnts = 0;
+var gameRun = true;
+var gameWin = false;
 
-        var c;
-        var ctx;
-        var img;
-        var x = 0;
-        var y = [];
-        var player;
-        var enemies = [];
-        var pickUps = [];
-        var physics;
-        
-        //classes
-        class Character {
-            constructor(x, y, spd, img){
-                this.iX = x;
-                this.iY = y;
-                this.iSpd = spd;
-                this.sprite = new Image();
-                this.sprite.src = img;
-            }
+class Char{
+  
+  constructor(_x, _y, _spd, _img) {
 
-            
-        }
+    this.iX = _x;
+    this.iY = _y;
+    this.iSpd = _spd;
+    this.sprite = new Image();
+    this.sprite.src = _img;
+    this.draw = true;
 
-        class PickUp {
-            constructor(x, y, img){
-                this.iX = x;
-                this.iY = y;
-                this.sprite = new Image();
-                this.sprite.src = img;
-                this.exists = true;
-            }
-        }
-        
-        class Physics {
-            collision (objA, objB) {
-                let c = (objB.iX - objA.iX) + (objB.iY - objA.iY);
-                
-                if (c < 25) {
-                    return true;
-                }
-                else{
-                    return false;
-                }
-            }
-            move (obj, dir) {
+  }
+}
 
-                switch(dir){
-                    case DIR_UP:
-                        obj.iY -= obj.spd;
-                    case DIR_LEFT:
-                        obj.iX -= obj.spd;
-                    case DIR_DOWN:
-                        obj.iY += obj.spd;
-                    case DIR_RIGHT:
-                        obj.iX += obj.spd;
-                }
-
-            }
-        }
+function Collision(objA, objB){
+	var c;
+    var a = Math.pow(objA.iX - objB.iX, 2);
+    var b = Math.pow(objA.iY - objB.iY, 2);
+    c = Math.sqrt(a+b);
+   	console.log(c);
+    if (c < 75){
+    	return true;
+    }
+    else{
+    	return false;
+    }
+}
 
 
-        
-        function setup () {
-                
-            //Player
-            player = new Character(400, 100, 2, "https://www.google.com/url?sa=i&source=images&cd=&cad=rja&uact=8&ved=2ahUKEwjby_HZk6jgAhUMZd8KHchvCKwQjRx6BAgBEAU&url=https%3A%2F%2Fimgur.com%2Fgallery%2FM2WNp%2Fcomment%2F8408891&psig=AOvVaw1kxIGM_2wP9EZYPGyxh-Ge&ust=1549578421002435");
-                
-            //Enemies
-            for (i = 0; i < NUM_ENEMIES; i++){
-                enemies[i] = new Character(0, 0, 0, "https://www.google.com/url?sa=i&source=images&cd=&cad=rja&uact=8&ved=2ahUKEwjno5CmlajgAhVhpIMKHSpAAbwQjRx6BAgBEAU&url=https%3A%2F%2Fcommons.wikimedia.org%2Fwiki%2FFile%3AThe_Legend_of_Zelda_-_NES_-_Red_octorok.svg&psig=AOvVaw35lfGvlpuRR569CJSwKT2H&ust=1549578877728030");
-            }
+function Init(){
 
-            //Pick Ups
-            for (i = 0; i < NUM_PICKUPS; i++){
-                pickUps[i] = new PickUp( Math.floor((Math.random() * 750) + 25), Math.floor((Math.random() * 550) + 25), "https://www.google.com/url?sa=i&source=images&cd=&cad=rja&uact=8&ved=2ahUKEwioncfZlqjgAhVI0YMKHcgFB20QjRx6BAgBEAU&url=https%3A%2F%2Fwww.kisspng.com%2Fpng-the-legend-of-zelda-the-wind-waker-pixel-art-hyrul-5161309%2Fdownload-png.html&psig=AOvVaw2vodV9LWsEnwCtFjm07ZLu&ust=1549579251964562");
-                    
-            }
-            
-            //Physics
-            physics = new Phyics();
+   c = document.getElementById("myCanvas");
+   ctx = c.getContext("2d");
+   
+   player = new Char(0, 200, 5, "http://2.bp.blogspot.com/-W5YWFyaZXl0/U_4xPYwNR8I/AAAAAAAAFr8/8Cl2ZJO4kH0/s1600/linknintendo.png");
+   
+   for(i = 0; i < NUM_PICKUPS; i++){
+    pickUps[i] = new Char(i* 75 + 30, i* 30, 0, "http://pixelartmaker.com/art/14c5e7f57a80a91.png")
+   }
+   for(i = 0; i < NUM_ENEMIES; i++){
+    enemies[i] = new Char(i*150, i*50, 1, "https://upload.wikimedia.org/wikipedia/commons/thumb/5/54/The_Legend_of_Zelda_-_NES_-_Red_octorok.svg/85px-The_Legend_of_Zelda_-_NES_-_Red_octorok.svg.png")
+   }
 
+   setInterval(Draw, 30);
+   setInterval(Collision(player, enemies), 30);
+   
+   window.addEventListener('keydown', function(event)
+   {
+	   KeyInput();
+   }, false);
+   
+   //Update();
+   
+} 
 
-            c = document.getElementById("myCanvas");
-            ctx = c.getContext("2d");
-            setInterval(Draw, 100);
-
-            window.addEventListener('keydown', function(event){
-                KeyInput();
-            }, false);
-
-        }
-
-        function Update () {
-            for(i = 0; i < NUM_ENEMIES; i++){
-                physics.move(enemies[i]);
-            }
-
-        }
-
-        function Render(obj) {
-
-            ctx.clearRect(0,0,c.width,c.height);
-                
-            ctx.drawImage(obj.sprite,obj.iX,obj.iY);
-        }
-
-        function EndCheck(){
-            
-        }
-
-        function KeyInput(obj){
-
-
-            switch (event.keyCode) {
-                case 37: // Left
-                    physics.move(obj, DIR_LEFT); 
-                case 38: // Up
-                    physics.move(obj, DIR_UP);
-                    break;
-                case 39: // Right
-                    physics.move(obj, DIR_RIGHT);
-                    break;
-                case 40: // Down
-                    physics.move(obj, DIR_DOWN);
-                    break;
-
-                    
-            }
-        }
+function Draw()
+{
+    ctx.clearRect(0,0,c.width,c.height);
     
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //ctx.drawImage(img,x,y);
+    for (i = 0; i < NUM_PICKUPS; i++){
+        if (pickUps[i].draw == true){
+            ctx.drawImage(pickUps[i].sprite,pickUps[i].iX - 135,pickUps[i].iY - 115);
+        }
+    }
+    if (player.draw == true){
+        ctx.drawImage(player.sprite,player.iX - 93,player.iY - 100);
+    }
+    for (i = 0; i < NUM_ENEMIES; i++){
+        if (enemies[i].draw == true){
+            ctx.drawImage(enemies[i].sprite,enemies[i].iX,enemies[i].iY);
+        }
+    }
+}
 
-        function Draw()
+function Update(){
+    var hit;
+	points.innerHTML = pnts;
+    for (i = 0; i < NUM_PICKUPS; i++){
+        var hit = Collision(player, pickUps[i]);
+        if (hit == true && pickUps[i].draw == true){
+            pnts++;
+            pickUps[i].draw = false;
+        }
+    }
+    for(i = 0; i < NUM_ENEMIES; i++){
+        hit = Collision(player, enemies[i]);
+        gameCheck(hit);
+    }
+
+    
+    
+}
+
+function gameCheck(hit){
+
+    if (pnts >= 15){
+        gameRun = false;
+        gameWin = true;
+        points.innerHTML = "You Win";
+    }
+    else if (hit == true){
+        gameRun = false;
+        gameWin = false;
+        points.innerHTML = "You Lose";
+    }
+}
+
+
+function KeyInput()
+{
+    if (gameRun == true){
+        switch (event.keyCode) 
         {
-            ctx.clearRect(0,0,c.width,c.height);
-            for(i=0; i < 3; i++)
-                ctx.drawImage(img,x,y[i]);
+            case 37: // Left
+                player.iX -= player.iSpd;
+                break;
+            case 38: // Up
+                player.iY -=  player.iSpd;
+                break;
+            case 39: // Right
+                player.iX +=  player.iSpd;
+                break;
+            case 40: // Down
+                player.iY +=  player.iSpd;
+                break;
         }
-        function Reset(){
-            x=0;
-        }
+        Update();
+    }
+}
 
-        function KeyInput(){
+function GameLoop(){
 
-            switch (event.keyCode) 
-            {
-                case 37: // Left
-                break;
-                case 38: // Up
-                y[0] --;
-                break;
-                case 39: // Right
-                break;
-                case 40: // Down
-                y[0]++;
-                break;
-            }
-        }
+    Init();
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
+}
 
-        </script>
-    </head>
-    <body onload="Setup()">
-        <p>Game:</p>
-        <canvas id="myCanvas" 
-                width="800" 
-                height="600"
-                style="border:1px solid #d3d3d3;">
-            Your browser does not support the HTML5 canvas tag.
-        </canvas>
-        
-        <p><button onclick="Reset()">Reset</button></p>
-    </body>
+
+</script>
+</head>
+  <body onload="GameLoop()">
+    <p>Game:</p>
+    <canvas id="myCanvas" width="1200" height="700" style="border:1px solid #d3d3d3;">
+    	Your browser does not support the HTML5 canvas tag.
+    </canvas>
+    <p>Points:</p> 
+    <div id="points"></div>
+    
+  </body>
 </html>
