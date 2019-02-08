@@ -4,7 +4,12 @@
 <script>
 
 const NUM_PICKUPS = 15;
-const NUM_ENEMIES = 4;
+const NUM_ENEMIES = 10;
+
+const UP = 0;
+const LEFT = 1;
+const DOWN = 2;
+const RIGHT = 3;
 
 var c;
 var ctx;
@@ -26,17 +31,67 @@ class Char{
     this.sprite = new Image();
     this.sprite.src = _img;
     this.draw = true;
+    this.dir;
 
   }
 }
 
-function Collision(objA, objB){
-	var c;
-    var a = Math.pow(objA.iX - objB.iX, 2);
-    var b = Math.pow(objA.iY - objB.iY, 2);
-    c = Math.sqrt(a+b);
-   	console.log(c);
-    if (c < 75){
+//Move Enemies
+function enemyMove(){
+    if (gameRun == true){ //Stops movement when game ends
+        for(i = 0; i < NUM_ENEMIES; i++){
+            
+            
+            switch(enemies[i].dir){
+                case 0:
+                    if (enemies[i].iY < 37){
+                        enemies[i].dir = 2;
+                    }
+                    enemies[i].iY -= enemies[i].iSpd;
+                    
+                    break;
+                case 1:
+                    if (enemies[i].iX < 37){
+                        enemies[i].dir = 3;
+                    }
+                    enemies[i].iX -= enemies[i].iSpd;
+                    
+                    break;
+                case 2:
+                    if (enemies[i].iY > 663){
+                        enemies[i].dir = 0;
+                    }
+                    enemies[i].iY += enemies[i].iSpd;
+                    
+                    break;
+                case 3:
+                    if (enemies[i].iX > 1163){ //makes the enemies turn around at theedge of the screen
+                        enemies[i].dir = 1;
+                    }
+                    enemies[i].iX += enemies[i].iSpd;
+                    
+                    break;
+            
+            }
+            hit = Collision(player, enemies[i], 63);
+            gameCheck(hit);
+        }
+    }
+
+}
+
+function setDir(){
+    for(i = 0; i < NUM_ENEMIES; i++){
+        enemies[i].dir = RandInt(0,3);
+    }
+}
+
+function Collision(_objA, _objB, _dist){
+	var _c;
+    var _a = Math.pow(_objA.iX - _objB.iX, 2);
+    var _b = Math.pow(_objA.iY - _objB.iY, 2);
+    _c = Math.sqrt(_a+_b);
+    if (_c < _dist){
     	return true;
     }
     else{
@@ -44,23 +99,30 @@ function Collision(objA, objB){
     }
 }
 
+function RandInt(_min, _max){
+    return Math.floor(Math.random() * Math.floor(_max - _min) + _min);
+}
+
+
+
 
 function Init(){
 
    c = document.getElementById("myCanvas");
    ctx = c.getContext("2d");
    
-   player = new Char(0, 200, 5, "http://2.bp.blogspot.com/-W5YWFyaZXl0/U_4xPYwNR8I/AAAAAAAAFr8/8Cl2ZJO4kH0/s1600/linknintendo.png");
+   player = new Char(100, 300, 8, "assets/images/link.png");
    
    for(i = 0; i < NUM_PICKUPS; i++){
-    pickUps[i] = new Char(i* 75 + 30, i* 30, 0, "http://pixelartmaker.com/art/14c5e7f57a80a91.png")
+        pickUps[i] = new Char(RandInt(100, 1100), RandInt(100, 600), 0, "assets/images/rupee.png")
    }
    for(i = 0; i < NUM_ENEMIES; i++){
-    enemies[i] = new Char(i*150, i*50, 1, "https://upload.wikimedia.org/wikipedia/commons/thumb/5/54/The_Legend_of_Zelda_-_NES_-_Red_octorok.svg/85px-The_Legend_of_Zelda_-_NES_-_Red_octorok.svg.png")
+        enemies[i] = new Char(RandInt(350, 1163), RandInt(150, 663), 3, "assets/images/octorok.png")
    }
 
    setInterval(Draw, 30);
-   setInterval(Collision(player, enemies), 30);
+   setInterval(setDir, 5000);
+   setInterval(enemyMove, 30);
    
    window.addEventListener('keydown', function(event)
    {
@@ -78,15 +140,15 @@ function Draw()
     //ctx.drawImage(img,x,y);
     for (i = 0; i < NUM_PICKUPS; i++){
         if (pickUps[i].draw == true){
-            ctx.drawImage(pickUps[i].sprite,pickUps[i].iX - 135,pickUps[i].iY - 115);
+            ctx.drawImage(pickUps[i].sprite,pickUps[i].iX - 17,pickUps[i].iY - 17);
         }
     }
     if (player.draw == true){
-        ctx.drawImage(player.sprite,player.iX - 93,player.iY - 100);
+        ctx.drawImage(player.sprite,player.iX - 25,player.iY - 25);
     }
     for (i = 0; i < NUM_ENEMIES; i++){
         if (enemies[i].draw == true){
-            ctx.drawImage(enemies[i].sprite,enemies[i].iX,enemies[i].iY);
+            ctx.drawImage(enemies[i].sprite,enemies[i].iX - 38,enemies[i].iY - 38);
         }
     }
 }
@@ -95,32 +157,25 @@ function Update(){
     var hit;
 	points.innerHTML = pnts;
     for (i = 0; i < NUM_PICKUPS; i++){
-        var hit = Collision(player, pickUps[i]);
+        var hit = Collision(player, pickUps[i], 42);
         if (hit == true && pickUps[i].draw == true){
             pnts++;
             pickUps[i].draw = false;
         }
-    }
-    for(i = 0; i < NUM_ENEMIES; i++){
-        hit = Collision(player, enemies[i]);
-        gameCheck(hit);
-    }
-
-    
-    
+    }  
 }
 
-function gameCheck(hit){
+function gameCheck(hit){ //Checks the paramters of the game ending like collecting all Rupees, or getting hit by an enemy
 
     if (pnts >= 15){
         gameRun = false;
         gameWin = true;
-        points.innerHTML = "You Win";
+        gameState.innerHTML = "You Win";
     }
     else if (hit == true){
         gameRun = false;
         gameWin = false;
-        points.innerHTML = "You Lose";
+        gameState.innerHTML = "You Lose";
     }
 }
 
@@ -131,23 +186,31 @@ function KeyInput()
         switch (event.keyCode) 
         {
             case 37: // Left
-                player.iX -= player.iSpd;
+                if ((player.iX - player.iSpd) > 25){
+                    player.iX -= player.iSpd;
+                }
                 break;
             case 38: // Up
-                player.iY -=  player.iSpd;
+                if ((player.iY - player.iSpd) > 25){
+                    player.iY -=  player.iSpd;
+                }
                 break;
             case 39: // Right
-                player.iX +=  player.iSpd;
+                if ((player.iX + player.iSpd) < 1175){
+                    player.iX +=  player.iSpd;
+                }
                 break;
             case 40: // Down
-                player.iY +=  player.iSpd;
+                if ((player.iY + player.iSpd) < 675){
+                    player.iY +=  player.iSpd;
+                }
                 break;
         }
         Update();
     }
 }
 
-function GameLoop(){
+function Reset(){
 
     Init();
 
@@ -157,13 +220,14 @@ function GameLoop(){
 
 </script>
 </head>
-  <body onload="GameLoop()">
+  <body onload="Init()">
     <p>Game:</p>
     <canvas id="myCanvas" width="1200" height="700" style="border:1px solid #d3d3d3;">
     	Your browser does not support the HTML5 canvas tag.
     </canvas>
-    <p>Points:</p> 
+    <div>Points:</div> 
     <div id="points"></div>
+    <div id="gameState"></div>
     
   </body>
 </html>
