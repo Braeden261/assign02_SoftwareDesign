@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <title>Assign02</title>
 <script>
 
 const NUM_PICKUPS = 15;
@@ -30,8 +31,8 @@ class Char{
     this.iSpd = _spd;
     this.sprite = new Image();
     this.sprite.src = _img;
-    this.draw = true;
-    this.dir;
+    this.bDraw = true;
+    this.iDir;
 
   }
 }
@@ -42,31 +43,31 @@ function enemyMove(){
         for(i = 0; i < NUM_ENEMIES; i++){
             
             
-            switch(enemies[i].dir){
-                case 0:
+            switch(enemies[i].iDir){
+                case UP:
                     if (enemies[i].iY < 37){
-                        enemies[i].dir = 2;
+                        enemies[i].iDir = 2;
                     }
                     enemies[i].iY -= enemies[i].iSpd;
                     
                     break;
-                case 1:
+                case LEFT:
                     if (enemies[i].iX < 37){
-                        enemies[i].dir = 3;
+                        enemies[i].iDir = 3;
                     }
                     enemies[i].iX -= enemies[i].iSpd;
                     
                     break;
-                case 2:
+                case DOWN:
                     if (enemies[i].iY > 663){
-                        enemies[i].dir = 0;
+                        enemies[i].iDir = 0;
                     }
                     enemies[i].iY += enemies[i].iSpd;
                     
                     break;
-                case 3:
+                case RIGHT:
                     if (enemies[i].iX > 1163){ //makes the enemies turn around at theedge of the screen
-                        enemies[i].dir = 1;
+                        enemies[i].iDir = 1;
                     }
                     enemies[i].iX += enemies[i].iSpd;
                     
@@ -82,7 +83,7 @@ function enemyMove(){
 
 function setDir(){
     for(i = 0; i < NUM_ENEMIES; i++){
-        enemies[i].dir = RandInt(0,3);
+        enemies[i].iDir = RandInt(UP,RIGHT);
     }
 }
 
@@ -102,9 +103,6 @@ function Collision(_objA, _objB, _dist){
 function RandInt(_min, _max){
     return Math.floor(Math.random() * Math.floor(_max - _min) + _min);
 }
-
-
-
 
 function Init(){
 
@@ -128,46 +126,40 @@ function Init(){
    {
 	   KeyInput();
    }, false);
-   
-   //Update();
-   
 } 
 
 function Draw()
 {
     ctx.clearRect(0,0,c.width,c.height);
     
-    //ctx.drawImage(img,x,y);
     for (i = 0; i < NUM_PICKUPS; i++){
-        if (pickUps[i].draw == true){
+        if (pickUps[i].bDraw == true){
             ctx.drawImage(pickUps[i].sprite,pickUps[i].iX - 17,pickUps[i].iY - 17);
         }
     }
-    if (player.draw == true){
+    if (player.bDraw == true){
         ctx.drawImage(player.sprite,player.iX - 25,player.iY - 25);
     }
     for (i = 0; i < NUM_ENEMIES; i++){
-        if (enemies[i].draw == true){
-            ctx.drawImage(enemies[i].sprite,enemies[i].iX - 38,enemies[i].iY - 38);
-        }
+        ctx.drawImage(enemies[i].sprite,enemies[i].iX - 38,enemies[i].iY - 38);
     }
 }
 
 function Update(){
     var hit;
-	points.innerHTML = pnts;
     for (i = 0; i < NUM_PICKUPS; i++){
         var hit = Collision(player, pickUps[i], 42);
-        if (hit == true && pickUps[i].draw == true){
+        if (hit == true && pickUps[i].bDraw == true){
             pnts++;
-            pickUps[i].draw = false;
+            pickUps[i].bDraw = false;
         }
     }  
+	points.innerHTML = pnts;
 }
 
 function gameCheck(hit){ //Checks the paramters of the game ending like collecting all Rupees, or getting hit by an enemy
 
-    if (pnts >= 15){
+    if (pnts >= NUM_PICKUPS){
         gameRun = false;
         gameWin = true;
         gameState.innerHTML = "You Win";
@@ -208,13 +200,6 @@ function KeyInput()
         }
         Update();
     }
-}
-
-function Reset(){
-
-    Init();
-
-    
 }
 
 
